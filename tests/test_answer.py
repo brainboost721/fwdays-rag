@@ -41,6 +41,12 @@ class AnswerTest(unittest.TestCase):
         self.assertIn("[source=data/tickets.csv]", answer)
         self.assertEqual(client.chat.completions.create.call_count, 1)
 
+        messages = client.chat.completions.create.call_args.kwargs["messages"]
+        self.assertEqual([message["role"] for message in messages], ["system", "user"])
+        self.assertIn("Спирайся ЛИШЕ", messages[0]["content"])
+        self.assertNotIn("Що зробили по заявці?", messages[0]["content"])
+        self.assertIn("Що зробили по заявці?", messages[1]["content"])
+
     def test_retries_answer_without_sources(self):
         answer, client = self.run_answer(
             [
@@ -51,6 +57,11 @@ class AnswerTest(unittest.TestCase):
 
         self.assertIn("[source=data/tickets.csv]", answer)
         self.assertEqual(client.chat.completions.create.call_count, 2)
+        retry_messages = client.chat.completions.create.call_args.kwargs["messages"]
+        self.assertEqual(
+            [message["role"] for message in retry_messages],
+            ["system", "user", "assistant", "user"],
+        )
 
     def test_refuses_when_retry_still_has_no_valid_source(self):
         answer, client = self.run_answer(
