@@ -4,7 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from rag.answer import NO_DATA, SOURCE_RE, rag_answer
+from rag.answer import NO_DATA, SOURCE_RE, rag_answer_with_router
 from rag.config import CHAT_MODEL, PROJECT_ROOT, TOP_K
 from rag.embeddings import get_client
 
@@ -132,7 +132,7 @@ def _source_metrics(expected: set[str], found: set[str]) -> tuple[float, float]:
 
 def evaluate_case(
     case: GoldenCase,
-    rag_fn: RagFunction = rag_answer,
+    rag_fn: RagFunction = rag_answer_with_router,
     judge_fn: JudgeFunction = judge_matches_reference,
     k: int = TOP_K,
 ) -> EvaluationResult:
@@ -173,7 +173,7 @@ def _print_result(result: EvaluationResult) -> None:
 
 def run_evaluation(
     cases: list[GoldenCase],
-    rag_fn: RagFunction = rag_answer,
+    rag_fn: RagFunction = rag_answer_with_router,
     judge_fn: JudgeFunction = judge_matches_reference,
     k: int = TOP_K,
     report: bool = True,

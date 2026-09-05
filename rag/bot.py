@@ -6,7 +6,7 @@ from telegram import Update
 from telegram.constants import ChatAction
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
-from rag.answer import rag_answer
+from rag.answer import rag_answer_with_router
 
 WELCOME_MESSAGE = (
     "Вітаю! Я асистент внутрішньої IT-підтримки YAIC. "
@@ -29,7 +29,9 @@ async def answer_message(update: Update, _context: ContextTypes.DEFAULT_TYPE) ->
 
     await message.chat.send_action(ChatAction.TYPING)
     try:
-        answer = await asyncio.to_thread(rag_answer, message.text.strip())
+        answer = await asyncio.to_thread(
+            rag_answer_with_router, message.text.strip()
+        )
     except Exception:
         logger.exception("Failed to answer Telegram message")
         await message.reply_text(ERROR_MESSAGE)

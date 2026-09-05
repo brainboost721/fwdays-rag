@@ -1,8 +1,12 @@
+import logging
 import re
 
 from rag.config import CHAT_MODEL, TOP_K
 from rag.embeddings import get_client
 from rag.retrieve import Hit, retrieve
+from rag.router import choose_sources_for_query, where_from_sources
+
+logger = logging.getLogger(__name__)
 
 NO_DATA = "У наших матеріалах немає даних для відповіді на це питання."
 
@@ -118,3 +122,9 @@ def rag_answer(question: str, k: int = TOP_K, where: dict | None = None) -> str:
     ]
     retried = _validate_answer(_complete(retry_messages), allowed)
     return retried if retried is not None else NO_DATA
+
+
+def rag_answer_with_router(question: str, k: int = TOP_K) -> str:
+    sources = choose_sources_for_query(question)
+    logger.info("Source route: %s", sources or "all indexed sources")
+    return rag_answer(question, k=k, where=where_from_sources(sources))

@@ -2,7 +2,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from rag.answer import NO_DATA, rag_answer
+from rag.answer import NO_DATA, rag_answer, rag_answer_with_router
 
 
 def completion(content: str):
@@ -81,6 +81,21 @@ class AnswerTest(unittest.TestCase):
 
         self.assertEqual(answer, NO_DATA)
         self.assertEqual(client.chat.completions.create.call_count, 1)
+
+    def test_routed_answer_passes_source_filter_to_retrieval_pipeline(self):
+        with (
+            patch(
+                "rag.answer.choose_sources_for_query",
+                return_value=["data/tickets.csv"],
+            ),
+            patch("rag.answer.rag_answer", return_value="Answer") as base_answer,
+        ):
+            answer = rag_answer_with_router("Question", k=3)
+
+        self.assertEqual(answer, "Answer")
+        base_answer.assert_called_once_with(
+            "Question", k=3, where={"source": "data/tickets.csv"}
+        )
 
 
 if __name__ == "__main__":
