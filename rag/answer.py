@@ -29,6 +29,10 @@ PROMPT_TEMPLATE = """Ти внутрішній асистент IT-підтри�
 SOURCE_RE = re.compile(r"\[source=([^\]]+)\]")
 
 
+def _is_refusal(answer: str) -> bool:
+    return answer.strip(" «\"'*").startswith(NO_DATA)
+
+
 def format_context(hits: list[Hit]) -> str:
     return "\n\n---\n\n".join(f"[source={h['source']}]\n{h['document']}" for h in hits)
 
@@ -61,7 +65,7 @@ def rag_answer(question: str, k: int = TOP_K, where: dict | None = None) -> str:
     answer = (completion.choices[0].message.content or "").strip()
 
     # The model keeps appending a sources block to refusals despite the prompt saying not to.
-    if answer.startswith(NO_DATA):
+    if _is_refusal(answer):
         return NO_DATA
 
     return drop_unseen_sources(answer, {h["source"] for h in hits})
