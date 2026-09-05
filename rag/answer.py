@@ -26,6 +26,11 @@ PROMPT_TEMPLATE = """Ти внутрішній асистент IT-підтри�
 Питання: {question}
 Відповідь:"""
 
+SOURCE_RETRY_PROMPT = """Перепиши попередню відповідь у потрібному форматі.
+Якщо контекст містить відповідь, заверши її блоком «Джерела:» і маркованим списком
+щонайменше з одного точного [source=…] із контексту. Не вигадуй шляхи.
+Якщо даних для відповіді немає, напиши рівно: «{no_data}» без блоку джерел."""
+
 SOURCE_RE = re.compile(r"\[source=([^\]]+)\]")
 
 
@@ -49,6 +54,35 @@ def drop_unseen_sources(answer: str, allowed: set[str]) -> str:
     return "\n".join(kept)
 
 
+def _has_valid_sources_block(answer: str, allowed: set[str]) -> bool:
+    lines = answer.splitlines()
+    for index, line in enumerate(lines):
+        if line.strip().strip("*# ") != "Джерела:":
+            continue
+        return any(
+            match.group(1) in allowed
+            for source_line in lines[index + 1 :]
+            for match in SOURCE_RE.finditer(source_line)
+        )
+    return False
+
+
+def _validate_answer(answer: str, allowed: set[str]) -> str | None:
+    if _is_refusal(answer):
+        return NO_DATA
+    cleaned = drop_unseen_sources(answer, allowed)
+    return cleaned if _has_valid_sources_block(cleaned, allowed) else None
+
+
+def _complete(messages: list[dict[str, str]]) -> str:
+    completion = get_client().chat.completions.create(
+        model=CHAT_MODEL,
+        messages=messages,
+        temperature=0.2,
+    )
+    return (completion.choices[0].message.content or "").strip()
+
+
 def rag_answer(question: str, k: int = TOP_K, where: dict | None = None) -> str:
     hits = retrieve(question, k=k, where=where)
     if not hits:
@@ -57,15 +91,20 @@ def rag_answer(question: str, k: int = TOP_K, where: dict | None = None) -> str:
     prompt = PROMPT_TEMPLATE.format(
         no_data=NO_DATA, context=format_context(hits), question=question
     )
-    completion = get_client().chat.completions.create(
-        model=CHAT_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.2,
-    )
-    answer = (completion.choices[0].message.content or "").strip()
+    messages = [{"role": "user", "content": prompt}]
+    answer = _complete(messages)
+    allowed = {hit["source"] for hit in hits}
+    validated = _validate_answer(answer, allowed)
+    if validated is not None:
+        return validated
 
-    # The model keeps appending a sources block to refusals despite the prompt saying not to.
-    if _is_refusal(answer):
-        return NO_DATA
-
-    return drop_unseen_sources(answer, {h["source"] for h in hits})
+    retry_messages = [
+        *messages,
+        {"role": "assistant", "content": answer or "(порожня відповідь)"},
+        {
+            "role": "user",
+            "content": SOURCE_RETRY_PROMPT.format(no_data=NO_DATA),
+        },
+    ]
+    retried = _validate_answer(_complete(retry_messages), allowed)
+    return retried if retried is not None else NO_DATA
