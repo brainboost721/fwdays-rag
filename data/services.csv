@@ -1,0 +1,11 @@
+service_id,service,owner,vendor,tier,sla_response,monthly_cost_uah,licenses,contract,notes
+S-01,Nimbus Workspace,IT-підтримка,Nimbus Cloud BV,critical,4 години,68400,180,,"Пошта, документи, календар, корпоративне сховище"
+S-02,Deskly,IT-підтримка,Deskly Systems,critical,2 години,31200,60,dogovir_deskly.pdf,"Система заявок і реєстрації інцидентів"
+S-03,Gitport Self-Managed,DevOps,Gitport Labs,critical,4 години,45900,180,,"Репозиторії, розгорнуто в CloudHub"
+S-04,Хмарна інфраструктура CloudHub,DevOps,CloudHub,critical,30 хвилин,412000,,dogovir_cloudhub.pdf,"Продакшен і стейджинг"
+S-05,Корпоративний VPN,IT-підтримка,власне рішення,high,4 години,0,,,"Два шлюзи: vpn-lviv і vpn-eu"
+S-06,Ledger One,Фінанси,Ledger One UA,high,1 робочий день,18700,12,,"Доступ лише за погодженням CFO"
+S-07,Framely,Дизайн,Framely Inc,medium,1 робочий день,24800,22,,"Дизайн-макети та прототипи"
+S-08,Guardis Endpoint,Безпека,Guardis Security,high,4 години,15300,180,,"Антивірус на робочих ноутбуках"
+S-09,Vaulty,Безпека,Vaulty AB,high,4 години,21600,180,,"Корпоративний менеджер паролів"
+S-10,Телефонія Lantel,Адмінвідділ,Lantel,medium,1 робочий день,9400,45,,"Офісні номери та переадресація"
