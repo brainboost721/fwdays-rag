@@ -22,12 +22,6 @@ def upsert_batches(collection, ids, documents, metadatas, batch_size=EMBED_BATCH
 
 def build_index(rebuild: bool = False):
     collection = get_collection(rebuild=rebuild)
-
-    if not rebuild and collection.count() > 0:
-        print(f"Колекція вже містить {collection.count()} чанків — індексацію пропущено.")
-        print("Для повної перебудови: python -m rag.index --rebuild")
-        return collection
-
     files = iter_corpus_files(DATA_DIR)
     print(f"Знайдено файлів у {DATA_DIR.relative_to(PROJECT_ROOT)}: {len(files)}\n")
 
