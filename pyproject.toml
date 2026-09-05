@@ -1,0 +1,16 @@
+[project]
+name = "it-support-rag"
+version = "0.1.0"
+description = "RAG-асистент внутрішньої IT-підтримки: політики, runbooks, заявки, SLA та договори з вендорами"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "openai==3.6.0",
+    "chromadb==1.5.9",
+    "python-dotenv==1.2.3",
+    "python-telegram-bot==22.8",
+    "pymupdf==1.28.2",
+    "reportlab==5.0.1",
+]
+
+[tool.uv]
+exclude-newer = "7 days ago"

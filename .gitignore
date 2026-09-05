@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+.env
+
+chroma_data/
+
+.ipynb_checkpoints/
+bot.log
+nohup.out
+.DS_Store
+
+rag_workshop_*.ipynb
+b8e38097-6951-497c-a382-193fe04d6637.pdf
